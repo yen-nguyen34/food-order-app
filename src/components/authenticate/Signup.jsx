@@ -1,4 +1,11 @@
 import { useState } from "react";
+import Input from "./Input";
+import {
+  isEmail,
+  isNotEmpty,
+  hasMinLength,
+  isEqualsToOtherValue,
+} from "../util/validation";
 
 const DATA_SOURCE = [
   {
@@ -16,80 +23,51 @@ const DATA_SOURCE = [
 ];
 
 function Signup() {
-  const [userInput, setUserInput] = useState({
+  const [enteredValues, setEnteredValues] = useState({
     email: "",
     password: "",
     confirmPwd: "",
     firstName: "",
     lastName: "",
-    valueCheck: "",
     selectedRole: "Student",
     isGoogle: false,
     isReference: false,
     isOther: false,
   });
 
-  const handleEmailChange = (event) => {
-    setUserInput((prevUserInput) => {
+  const [didEdit, setDidEdit] = useState({
+    email: false,
+    password: false,
+    confirmPwd: false,
+    firstName: false,
+    lastName: false,
+    selectedRole: false,
+    isGoogle: false,
+    isReference: false,
+    isOther: false,
+  });
+
+  const handleUserInputChange = (identifier, value) => {
+    // identifier: key [email, password,... tu dat]
+    setEnteredValues((prevUserInput) => {
       return {
         ...prevUserInput,
-        email: event.target.value,
+        [identifier]: value,
       };
     });
-  };
 
-  const handlePwdChange = (event) => {
-    setUserInput((prevUserInput) => {
-      return {
-        ...prevUserInput,
-        password: event.target.value,
-      };
-    });
+    setDidEdit((prevEditValue) => ({
+      ...prevEditValue,
+      [identifier]: false,
+    }));
   };
-
-  const handleConfirmPwdChange = (event) => {
-    setUserInput((prevUserInput) => {
-      return {
-        ...prevUserInput,
-        confirmPwd: event.target.value,
-      };
-    });
-  };
-
-  const handleFirstNameChange = (event) => {
-    setUserInput((prevUserInput) => {
-      return {
-        ...prevUserInput,
-        firstName: event.target.value,
-      };
-    });
-  };
-
-  const handleLastNameChange = (event) => {
-    setUserInput((prevUserInput) => {
-      return {
-        ...prevUserInput,
-        lastName: event.target.value,
-      };
-    });
-  };
-
-    //   const [selectedRole, setSelectedRole] = useState("Student");
-    const handleSelectRole = (event) => {
-        setUserInput((prev) => {
-            return {
-                ...prev,
-                selectedRole: event.target.value
-            }
-        })
-    }
 
   const handleSingleCheck = (event, item) => {
     item.value = !item.value;
     console.log(DATA_SOURCE);
     switch (item.name) {
       case "GOOGLE":
-        setUserInput((prev) => {
+        setEnteredValues((prev) => {
           return {
             ...prev,
             isGoogle: item.value,
@@ -97,7 +75,7 @@ function Signup() {
         });
         break;
       case "REFERRED BY FRIEND":
-        setUserInput((prev) => {
+        setEnteredValues((prev) => {
           return {
             ...prev,
             isReference: item.value,
@@ -105,7 +83,7 @@ function Signup() {
         });
         break;
       case "OTHER":
-        setUserInput((prev) => {
+        setEnteredValues((prev) => {
           return {
             ...prev,
             isOther: item.value,
@@ -115,47 +93,85 @@ function Signup() {
     }
   };
 
+  const isValidEmail =
+    didEdit.email &&
+    !isEmail(enteredValues.email) &&
+    !isNotEmpty(enteredValues.email);
+
+  const isValidPwdLength =
+    didEdit.password &&
+    !hasMinLength(enteredValues.password, 8) &&
+    !isNotEmpty(enteredValues.email);
+
+  const isEqualConfirmPwd =
+    didEdit.password &&
+    !isEqualsToOtherValue(enteredValues.password, enteredValues.confirmPwd);
+
+  const isNotEmptyValues =
+    didEdit.email &&
+    didEdit.password &&
+    didEdit.confirmPwd &&
+    didEdit.firstName &&
+    didEdit.lastName &&
+    didEdit.selectedRole &&
+    didEdit.isGoogle &&
+    didEdit.isReference &&
+    didEdit.isOther;
+  !isNotEmpty(
+    enteredValues.email,
+    enteredValues.password,
+    enteredValues.confirmPwd,
+    enteredValues.firstName,
+    enteredValues.lastName,
+    enteredValues.selectedRole,
+    enteredValues.isGoogle,
+    enteredValues.isReference,
+    enteredValues.isOther
+  );
+
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(userInput);
+    console.log(enteredValues);
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <h2>Welcome on board!</h2>
       <p>We just need a little bit of data from you to get you started 🚀</p>
-
       <div className="control">
-        <label htmlFor="email">Email</label>
-        <input
+        <Input
+          label="Email"
           id="email"
           type="email"
           name="email"
-          value={userInput.email}
-          onChange={handleEmailChange}
+          value={enteredValues.email}
+          onChange={(event) =>
+            handleUserInputChange("email", event.target.value)
+          }
+          error={isValidEmail && "Please enter a valid email address."}
         />
-      </div>
-
-      <div className="control-row">
-        <div className="control">
-          <label htmlFor="password">Password</label>
-          <input
+        <div className="control-row">
+          <Input
+            label="Password"
             id="password"
             type="password"
             name="password"
-            value={userInput.password}
-            onChange={handlePwdChange}
+            value={enteredValues.password}
+            onChange={(event) =>
+              handleUserInputChange("password", event.target.value)
+            }
+            error={isValidPwdLength && "Please enter a valid password."}
           />
-        </div>
-
-        <div className="control">
-          <label htmlFor="confirm-password">Confirm Password</label>
-          <input
+          <Input
+            label="Confirm Password"
             id="confirm-password"
             type="password"
             name="confirm-password"
-            value={userInput.confirmPwd}
-            onChange={handleConfirmPwdChange}
+            value={enteredValues.confirmPwd}
+            onChange={(event) =>
+              handleUserInputChange("confirmPwd", event.target.value)
+            }
+            error={isEqualConfirmPwd && "Please enter them same password."}
           />
         </div>
       </div>
@@ -163,27 +179,27 @@ function Signup() {
       <hr />
 
       <div className="control-row">
-        <div className="control">
-          <label htmlFor="first-name">First Name</label>
-          <input
-            type="text"
-            id="first-name"
-            name="first-name"
-            value={userInput.firstName}
-            onChange={handleFirstNameChange}
-          />
-        </div>
+        <Input
+          label="First Name"
+          type="text"
+          id="first-name"
+          name="first-name"
+          value={enteredValues.firstName}
+          onChange={(event) =>
+            handleUserInputChange("firstName", event.target.value)
+          }
+        />
 
-        <div className="control">
-          <label htmlFor="last-name">Last Name</label>
-          <input
-            type="text"
-            id="last-name"
-            name="last-name"
-            value={userInput.lastName}
-            onChange={handleLastNameChange}
-          />
-        </div>
+        <Input
+          label="Last Name"
+          type="text"
+          id="last-name"
+          name="last-name"
+          value={enteredValues.lastName}
+          onChange={(event) =>
+            handleUserInputChange("lastName", event.target.value)
+          }
+        />
       </div>
 
       <div className="control">
@@ -191,15 +207,18 @@ function Signup() {
         <select
           id="role"
           name="role"
-          value={userInput.selectedRole}
-          onChange={handleSelectRole}
+          value={enteredValues.selectedRole}
+          onChange={(event) =>
+            handleUserInputChange("selectedRole", event.target.value)
+          }
         >
-          <option value="student">Student</option>
-          <option value="teacher">Teacher</option>
-          <option value="employee">Employee</option>
-          <option value="founder">Founder</option>
-          <option value="other">Other</option>
+          <option value="Student">Student</option>
+          <option value="Teacher">Teacher</option>
+          <option value="Employee">Employee</option>
+          <option value="Founder">Founder</option>
+          <option value="Other">Other</option>
         </select>
+        {}
       </div>
 
       <fieldset>

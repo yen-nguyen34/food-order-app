@@ -1,36 +1,46 @@
 import { useState } from "react";
+import { hasMinLength, isEmail, isNotEmpty } from "../util/validation";
+import Input from "./Input";
+import { useNavigate } from "react-router-dom";
 
 function Login() {
-  const [enteredValue, setEnteredValue] = useState({
+  const [enteredValues, setEnteredValues] = useState({
     email: "",
     password: "",
   });
 
-  const handleEmailChange = (event) => {
-    setEnteredValue((prevUserInput) => {
-      return {
-        ...prevUserInput,
-        email: event.target.value,
-      };
-    });
-  };
+  const [didEdit, setDidEdit] = useState({
+    email: false,
+    password: false,
+  });
 
-  const handlePwdChange = (event) => {
-    setEnteredValue((prevUserInput) => {
-      return {
-        ...prevUserInput,
-        password: event.target.value,
-      };
-    });
+  let navigate = useNavigate();
+
+  const isValidEmail =
+    didEdit.email &&
+    !isEmail(enteredValues.email) &&
+    !isNotEmpty(enteredValues.email);
+
+  const isValidPwd =
+    didEdit.password &&
+    !hasMinLength(enteredValues.password, 8) &&
+    !isNotEmpty(enteredValues.password);
+
+  const handleInputChange = (identifier, value) => {
+    setEnteredValues((prevUserInput) => ({
+      ...prevUserInput,
+      [identifier]: value,
+    }));
+    setDidEdit((prevEditValue) => ({ ...prevEditValue, [identifier]: true }));
   };
 
   const handleSubmit = (event) => {
     event.preventDefault();
-    console.log(enteredValue);
+    console.log(enteredValues);
   };
 
   const handleReset = () => {
-    setEnteredValue({
+    setEnteredValues({
       email: "",
       password: "",
     });
@@ -39,36 +49,36 @@ function Login() {
   return (
     <form onSubmit={handleSubmit}>
       <h2>Login</h2>
-
       <div className="control-row">
-        <div className="control no-margin">
-          <label htmlFor="email-login">Email</label>
-          <input
-            id="email-login"
-            type="email"
-            name="email-login"
-            value={enteredValue.email}
-            onChange={handleEmailChange}
-            required
-          />
-        </div>
-
-        <div className="control no-margin">
-          <label htmlFor="password-login">Password</label>
-          <input
-            id="password-login"
-            type="password"
-            name="password-login"
-            value={enteredValue.password}
-            onChange={handlePwdChange}
-            required
-            minLength={8}
-          />
-        </div>
+        <Input
+          label="Email"
+          id="email-login"
+          type="email"
+          name="email"
+          value={enteredValues.email}
+          onChange={(event) => handleInputChange("email", event.target.value)}
+          error={isValidEmail && "Please enter a valid email address."}
+        />
+        {console.log(isValidEmail)}
+        <Input
+          label="Password"
+          id="password-login"
+          type="password"
+          name="password"
+          value={enteredValues.password}
+          onChange={(event) =>
+            handleInputChange("password", event.target.value)
+          }
+          error={isValidPwd && "Please enter a valid password."}
+        />
       </div>
 
       <p className="form-actions">
-        <button type="submit" className="button">
+        <button
+          type="submit"
+          className="button"
+          onClick={() => navigate("/meals")}
+        >
           Login
         </button>
         <button

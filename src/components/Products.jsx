@@ -33,8 +33,6 @@ const Products = forwardRef(({ addToCartCallback }, ref) => {
 
   return (
     <>
-      <Login />
-      <Signup/>
       <ul id="meals">
         {meals.length > 0 &&
           meals.map((meal) => (
