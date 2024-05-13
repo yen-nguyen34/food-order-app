@@ -24,6 +24,7 @@ function Albums() {
           <p key={album.id}>
             <li>Post ID: {album.userId}</li>
             <li>Name: {album.title}</li>
+            <li>Description: {album.title}</li>
           </p>
         ))}
       </ul>
